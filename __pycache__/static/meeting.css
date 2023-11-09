@@ -1,0 +1,96 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.home{
+    height: 88vh;
+    display: flex;
+    justify-content: space-between;
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.left{
+    width: 30%;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    font-size: 40px;
+    text-align: center;
+}
+
+.right{
+    width: 65%;
+    padding: 20px;
+    font-size: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+input[type="text"]{
+    width: 200px;
+    height: 25px;
+}
+
+select {
+    padding: 8px;
+    font-size: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #5cebdc;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btnleft{
+    display: block;
+    margin: 0 auto;
+    width: 100px;
+    padding: 10px;
+    font-size: 20px;
+    background-color: #5cebdc;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.btnright{
+    display: block;
+    width: 100px;
+    padding: 10px;
+    font-size: 18px;
+    background-color: #8af4e9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.even {
+    background-color: #f2f2f2;  /* 偶数行的背景颜色 */
+}
+
+.odd {
+    background-color: #ffffff;  /* 奇数行的背景颜色 */
+}
