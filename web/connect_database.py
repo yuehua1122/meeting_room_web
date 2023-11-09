@@ -1,16 +1,29 @@
 # connect_database.py
 import pymysql
-
+from mysql.connector.constants import ClientFlag
 # 資料庫參數設定
+
+#connection_params = {
+#    "host='kuramysql.mysql.database.azure.com',
+#    "port="3306",
+#    user="kura",
+#    password="Kevinbear60404",
+#    db="kruadb",
+#    ssl={"ca","C:/Users/user/Desktop/專題/沙崙資安競賽/meeting room web/web/DigiCertGlobalRootCA.crt.pem"},
+#    ={'ca': '/path/to/ca-file'})
+#    "charset": "utf8mb4",
+#    "cursorclass": pymysql.cursors.DictCursor
+#}
+
+
 connection_params = {
-    "host": "127.0.0.1",
-    "port": 3306,
-    "user": "root",
-    "password": "kevinbear60404",
-    "db": "meeting room",
-    "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor
+    'user': 'kura',
+    'password': 'Kevinbear60404',
+    'host': 'kuramysql.mysql.database.azure.com',
+    'client_flags': [ClientFlag.SSL],
+    'ssl_ca': 'C:/Users/user/Desktop/DigiCertGlobalRootCA.crt.pem',
 }
+
 
 import pymysql
 
