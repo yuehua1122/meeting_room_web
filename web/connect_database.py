@@ -1,33 +1,19 @@
 # connect_database.py
 import pymysql
-from mysql.connector.constants import ClientFlag
+
 # 資料庫參數設定
-
-#connection_params = {
-#    "host='kuramysql.mysql.database.azure.com',
-#    "port="3306",
-#    user="kura",
-#    password="Kevinbear60404",
-#    db="kruadb",
-#    ssl={"ca","C:/Users/user/Desktop/專題/沙崙資安競賽/meeting room web/web/DigiCertGlobalRootCA.crt.pem"},
-#    ={'ca': '/path/to/ca-file'})
-#    "charset": "utf8mb4",
-#    "cursorclass": pymysql.cursors.DictCursor
-#}
-
-
 connection_params = {
-    'user': 'kura',
-    'password': 'Kevinbear60404',
-    'host': 'kuramysql.mysql.database.azure.com',
-    'client_flags': [ClientFlag.SSL],
-    'ssl_ca': 'C:/Users/user/Desktop/DigiCertGlobalRootCA.crt.pem',
+    "host": "127.0.0.1",
+    "port": 3306,
+    "user": "root",
+    "password": "kevinbear60404",
+    "db": "meeting room",
+    "charset": "utf8mb4",
+    "cursorclass": pymysql.cursors.DictCursor
 }
 
-
-import pymysql
-
 def check(data):
+    try:
         c_id = data["c_id"]
         r_start = data["r_start"]
         r_end = data["r_end"]
@@ -57,14 +43,17 @@ def check(data):
                     return "預約失敗，會議室已被預定!"
 
                 # 插入預約
-                insert_sql = "INSERT INTO reserve (`r_start`, `r_end`, `c_id`,`room_no`) VALUES (%s, %s, %s, %s)"
-                cursor.execute(insert_sql, (r_start, r_end, c_id, room))
+                # insert_sql = "INSERT INTO reserve (`r_start`, `r_end`, `c_id`,`room_no`) VALUES (%s, %s, %s, %s)"
+                # cursor.execute(insert_sql, (r_start, r_end, c_id, room))
+                cursor.execute('INSERT INTO reserve (`r_start`, `r_end`, `c_id`,`room_no`) VALUES (%s, %s, %s, %s)', (r_start, r_end, c_id, room))
                 successful_message = "預約成功!&" + "預約ID : " + c_id + "&會議室 : " + room + "&從 " + r_start + " 到 " + r_end 
             connection.commit()
         return successful_message
-    
+    except pymysql.MySQLError as e:
+        return "尚未連接資料庫,無法處理您的預約訊息"  # 或者返回其他適當的錯誤消息
 
 def view(data):
+    try:
         viewTime = data["viewTime"]            
 
         # 建立資料庫連接
@@ -81,9 +70,42 @@ def view(data):
             result["r_no"] = new_r_no
             new_results.append(result)
             new_r_no += 1
+            
 
         return new_results
+    except pymysql.MySQLError as e:
+        return "尚未連接資料庫"  # 或者返回其他適當的錯誤訊息
+
+def modify(data):
+    try:
+        m_id = data["m_id"]
+        # 建立資料庫連接
+        with pymysql.connect(**connection_params) as connection:
+            with connection.cursor() as cursor:
+                m_id_query = "SELECT r_no, r_start, r_end, room_no FROM reserve WHERE c_id = %s ORDER BY r_no ASC"
+                cursor.execute(m_id_query, (m_id,))
+                results = cursor.fetchall()
+                return results
+    except pymysql.MySQLError as e:
+        return "資料庫連接錯誤，無法查詢預約資料"
     
+def delete(data):
+    try:
+        r_no = data["r_no"]
+        with pymysql.connect(**connection_params) as connection:
+            with connection.cursor() as cursor: 
+                cursor.execute('DELETE FROM reserve WHERE r_no = %s', (r_no))
+                connection.commit()
+                return "成功刪除"            
+    except pymysql.MySQLError as e:
+        return "資料庫連接錯誤，無法查詢預約資料"
+ 
+
+ 
+
+
+    
+
 
 
 

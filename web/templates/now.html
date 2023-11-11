@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="meeting.css" />
+        <title>會議室管理系統</title>
+    </head>
+    <body>
+        <div class="home">
+            <div class="left">
+                <h1>會議室預約系統</h1>
+                <form action="/" >
+                    <button class="btnleft" type="submit">立即預約</button>
+                </form>
+                <form action="/view" >
+                    <button class="btnleft" type="submit">查看預約</button>
+                </form>
+                <form action="/modify" >
+                    <button class="btnleft" type="submit">變更預約</button>
+                </form>
+                <form action="/now" >
+                    <button class="btnleft" type="submit">即時狀況</button>
+                </form>
+            </div>
+            <div class="right">
+                <h2>即時狀況</h2>
+                <form id="nForm" action="/ndata" method="POST">
+                    <button class="btnright" >確認</button>
+                </form>
+            </div> 
+        </div>
+        <script src="vtime.js"></script>
+        <script src="action.js"></script>
+        <script src="view.js"></script>
+    </body>
+</html>

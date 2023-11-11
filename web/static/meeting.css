@@ -63,7 +63,7 @@ button {
 .btnleft{
     display: block;
     margin: 0 auto;
-    width: 100px;
+    width: 150px;
     padding: 10px;
     font-size: 20px;
     background-color: #5cebdc;
@@ -88,9 +88,10 @@ button {
 }
 
 .even {
-    background-color: #f2f2f2;  /* 偶数行的背景颜色 */
+    background-color: #f2f2f2;  /* 偶數行的背景顏色 */
 }
 
 .odd {
-    background-color: #ffffff;  /* 奇数行的背景颜色 */
+    background-color: #ffffff;  /* 奇數行的背景顏色 */
 }
+

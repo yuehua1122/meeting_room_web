@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // 在此處理回應資料，可以顯示成功消息或執行其他操作
           const MessageLabel = document.getElementById("message1");
           const newMessage = data.replace( /&/g , "<br>");
-          MessageLabel.innerHTML = newMessage;
+          MessageLabel.innerHTML = newMessage;    
         })
         .catch(error => {
           console.error("Error:", error);

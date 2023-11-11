@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request,redirect
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -21,6 +21,16 @@ def reserve():
 @app.route("/view")
 def view():
     return render_template("view.html")
+
+# 變更預約
+@app.route("/modify")
+def modify():
+    return render_template("modify.html")
+
+# 即時狀況
+@app.route("/now")
+def now():
+    return render_template("now.html")
 
 # 處理預約資料
 @app.route("/rdata", methods=["POST"])
@@ -90,6 +100,42 @@ def vdata():
 
     return table
 
+@app.route("/mdata", methods=["POST"])
+def mdata():
+    m_id = request.form.get("m_id")
+    print(f"m_id: {m_id}")
+    
+    response_data = {"m_id": m_id}
+    from connect_database import modify
+    message3 = modify(response_data)
+            
+    if not message3:
+        return "查無該ID的預約資料"  # 如果沒有資料，返回相應的消息
+    
+    table = "<table border='1'>"
+    table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
+
+    for item in message3:   
+        table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
+        table += f"<td><form id='dForm' action='/delete' method='POST'><input type='hidden' name='r_no' value='{item['r_no']}'><button type='submit'>删除</button></form></td></tr>"
+            
+    table += "</table>"
+    return table
+
+@app.route('/delete', methods=['POST'])
+def delete():
+    r_no = request.form.get("r_no")
+    print(f"r_no: {r_no}")
+    
+    response_data = {"r_no": r_no}
+    from connect_database import delete
+    message4 = delete(response_data)
+    return message4
+
+@app.route("/ndata", methods=["POST"])
+def ndata():
+    return
 
 if __name__ == "__main__":
-    app.run(port=3000)
+    app.run(host='0.0.0.0',port=3000)
+    
