@@ -29,14 +29,16 @@
                     <input type="text" id="id" name="m_id" />
                     <br>
                     <br>
-                    <button class="btnright" id="check" >確認</button>
+                    <button class="btnright" id="check" type="submit">確認</button>
                 </form>
+                <form id="dForm" action="/delete" method="POST">
                 <label id="message3">{{ message3 }}</label> 
-                <label id="message4">{{ message4 }}</label>          
+                </form> 
             </div>
             
         </div>
+        <script src="delete.js"></script>
         <script src="action.js"></script>
-        <script src="modify.js"></script>
+        <script src="modify.js"></script>        
     </body>
 </html>

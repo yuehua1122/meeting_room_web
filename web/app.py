@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request,redirect
 from flask_sqlalchemy import SQLAlchemy
 
+
 db = SQLAlchemy()
 
 #先設好Flask
@@ -117,24 +118,39 @@ def mdata():
 
     for item in message3:   
         table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
-        table += f"<td><form id='dForm' action='/delete' method='POST'><input type='hidden' name='r_no' value='{item['r_no']}'><button type='submit'>删除</button></form></td></tr>"
+        table += f"<td><input type='hidden' name='r_no' value='{item['r_no']}'><input type='hidden' name='c_id' value='{item['c_id']}'><button type='submit'>刪除</button></td></tr>"
             
     table += "</table>"
     return table
 
 @app.route('/delete', methods=['POST'])
 def delete():
+    c_id = request.form.get("c_id")
     r_no = request.form.get("r_no")
     print(f"r_no: {r_no}")
+    print(f"c_id: {c_id}")
     
-    response_data = {"r_no": r_no}
+    response_data = {"r_no": r_no,"c_id": c_id}
     from connect_database import delete
     message4 = delete(response_data)
-    return message4
+    if not message4:
+        return "查無該ID的預約資料"  # 如果沒有資料，返回相應的消息
+    
+    table = "<table border='1'>"
+    table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
+
+    for item in message4:   
+        table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
+        table += f"<td><button type='submit'>刪除</button></td></tr>"
+            
+    table += "</table>"
+    return table
+    
 
 @app.route("/ndata", methods=["POST"])
 def ndata():
     return
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=3000)
