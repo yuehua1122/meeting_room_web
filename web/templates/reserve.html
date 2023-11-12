@@ -10,21 +10,26 @@
             <div class="left">
                 <h1>會議室預約系統</h1>
                 <form action="/" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">立即預約</button>
                 </form>
                 <form action="/view" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">查看預約</button>
                 </form>
                 <form action="/modify" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">變更預約</button>
                 </form>
                 <form action="/now" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">即時狀況</button>
                 </form>
             </div>
             <div class="right">
                 <h2>預約會議室</h2>
                 <form id="rForm" action="/rdata" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <label>ID：</label>
                     <input type="text" id="id" name="c_id"/>
                     <label>&nbsp;&nbsp;會議室：</label>

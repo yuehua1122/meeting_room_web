@@ -10,15 +10,19 @@
             <div class="left">
                 <h1>會議室預約系統</h1>
                 <form action="/" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">立即預約</button>
                 </form>
                 <form action="/view" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">查看預約</button>
                 </form>
                 <form action="/modify" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">變更預約</button>
                 </form>
                 <form action="/now" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">即時狀況</button>
                 </form>
             </div>
@@ -26,13 +30,15 @@
                 <h2>變更會議室</h2>
                 <label>ID：</label>
                 <form id="mForm" action="/mdata" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="text" id="id" name="m_id" />
                     <br>
                     <br>
                     <button class="btnright" id="check" type="submit">確認</button>
                 </form>
                 <form id="dForm" action="/delete" method="POST">
-                <label id="message3">{{ message3 }}</label> 
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <label id="message3">{{ message3 }}</label> 
                 </form> 
             </div>
             

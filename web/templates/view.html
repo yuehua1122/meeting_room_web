@@ -10,15 +10,19 @@
             <div class="left">
                 <h1>會議室預約系統</h1>
                 <form action="/" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">立即預約</button>
                 </form>
                 <form action="/view" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">查看預約</button>
                 </form>
                 <form action="/modify" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">變更預約</button>
                 </form>
                 <form action="/now" >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button class="btnleft" type="submit">即時狀況</button>
                 </form>
             </div>
@@ -26,30 +30,31 @@
                 <h2>查看預約</h2>
                 <label>查看日期：</label>
                 <form id="vForm" action="/vdata" method="POST">
-                <select id="viewYear" name="viewYear">
-                </select>
-                <label>年</label>
-                <select id="viewMonth" name="viewMonth">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                </select>
-                <label>月</label>
-                <select id="viewDate" name="viewDate">
-                </select>    
-                <label>日</label>
-                <br>
-                <br>
-                <button class="btnright">確定</button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <select id="viewYear" name="viewYear">
+                    </select>
+                    <label>年</label>
+                    <select id="viewMonth" name="viewMonth">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                    <label>月</label>
+                    <select id="viewDate" name="viewDate">
+                    </select>    
+                    <label>日</label>
+                    <br>
+                    <br>
+                    <button class="btnright">確定</button>
                 </form>
                 <br>
                 <label id="message2">{{ message2 }}</label>                

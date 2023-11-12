@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import re
+from flask_wtf import CSRFProtect
 from datetime import datetime
+import re,os
 
 db = SQLAlchemy()
 
@@ -13,6 +14,8 @@ app = Flask(
     static_folder="static",
     static_url_path="/"
 )
+app.config['SECRET_KEY'] = os.urandom(24)  # 替換成一個強隨機值
+csrf = CSRFProtect(app)
 
 # 主頁
 @app.route("/")
@@ -192,5 +195,6 @@ def ndata():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=3000)
+    app.run(host='0.0.0.0',port=5000)
+    
     
