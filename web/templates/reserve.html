@@ -24,8 +24,8 @@
             </div>
             <div class="right">
                 <h2>預約會議室</h2>
-                <label>ID：</label>
                 <form id="rForm" action="/rdata" method="POST">
+                    <label>ID：</label>
                     <input type="text" id="id" name="c_id"/>
                     <label>&nbsp;&nbsp;會議室：</label>
                     <select id="room" name="meetroom">
@@ -55,6 +55,10 @@
                         <option>A024</option>
                         <option>A025</option>                    
                     </select>
+                    <br>
+                    <label>會議主題：</label>
+                    <input type="text" id="activity"/>
+                    <br>
                     <br>
                     <label>從</label>
                     <select id="StartYear"name="start_year">
@@ -118,6 +122,12 @@
                 </form>
                 <br>
                 <label id="message1">{{ message1 }}</label>
+                <br>
+                <label id="message2">{{ message2 }}</label>
+                <br>
+                <label id="message3">{{ message3 }}</label>
+                <br>
+                <label id="message4">{{ message4 }}</label>
                 <br>
                 <label id="reservation"></label>
                 <br>

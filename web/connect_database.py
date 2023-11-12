@@ -38,12 +38,13 @@ def check(data):
                     (r_start >= %s AND r_end <= %s)
                 )
                 """
-                cursor.execute(check_time_and_room_sql, (room, r_start, r_start, r_end, r_end, r_start, r_end))
+                cursor.execute(check_time_and_room_sql, (room, r_start, r_start, r_end, r_end, r_start, r_end,))
                 if cursor.rowcount > 0:
                     return "預約失敗，會議室已被預定!"
 
                 # 插入預約
-                cursor.execute('INSERT INTO reserve (`r_start`, `r_end`, `c_id`,`room_no`) VALUES (%s, %s, %s, %s)', (r_start, r_end, c_id, room))
+                insert_sql = "INSERT INTO reserve (`r_start`, `r_end`, `c_id`, `room_no`) VALUES (%s, %s, %s, %s)"
+                cursor.execute(insert_sql, (r_start, r_end, c_id, room,))    
                 successful_message = "預約成功!&" + "預約ID : " + c_id + "&會議室 : " + room + "&從 " + r_start + " 到 " + r_end 
             connection.commit()
         return successful_message
