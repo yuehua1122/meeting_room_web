@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request,redirect
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-
+import re
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -36,6 +37,22 @@ def now():
 # 處理預約資料
 @app.route("/rdata", methods=["POST"])
 def rdata():
+    def is_valid_c_id(c_id):
+        return re.match(r'^B\d{7}$', c_id) is not None
+
+    def is_valid_room(room):
+        return re.match(r'^A\d{3}$', room) is not None
+
+    def is_valid_date(year, month, day):
+        try:
+            datetime(int(year), int(month), int(day))
+            return True
+        except ValueError:
+            return False
+
+    def is_valid_time(hour, minute):
+        return 0 <= int(hour) <= 23 and 0 <= int(minute) <= 59
+    
     c_id = request.form.get("c_id")
     room = request.form.get("meetroom")
     start_year = request.form.get("start_year")
@@ -49,57 +66,79 @@ def rdata():
     end_hour = request.form.get("end_hour")
     end_minute = request.form.get("end_minute")
 
-    print(f"c_id: {c_id}")
-    print(f"room: {room}")
-    print(f"r_start: {start_year,start_month,start_date,start_hour,start_minute}")
-    print(f"r_end: {end_year,end_month,end_date,end_hour,end_minute}")
+    if (is_valid_c_id(c_id) and
+        is_valid_room(room) and
+        is_valid_date(start_year, start_month, start_date) and
+        is_valid_time(start_hour, start_minute) and
+        is_valid_date(end_year, end_month, end_date) and
+        is_valid_time(end_hour, end_minute)):
+        #所有驗證通過
+           
+        print(f"c_id: {c_id}")
+        print(f"room: {room}")
+        print(f"r_start: {start_year,start_month,start_date,start_hour,start_minute}")
+        print(f"r_end: {end_year,end_month,end_date,end_hour,end_minute}")
 
-    # 建立回應資料
-    response_data = {
-        "c_id": c_id,
-        "room": room,
-        "r_start": start_year + "-" + start_month + "-" + start_date + " " + start_hour + ":" + start_minute,
-        "r_end": end_year + "-" + end_month + "-" + end_date + " " + end_hour + ":" + end_minute
-    }
+        # 建立回應資料
+        response_data = {
+            "c_id": c_id,
+            "room": room,
+            "r_start": start_year + "-" + start_month + "-" + start_date + " " + start_hour + ":" + start_minute,
+            "r_end": end_year + "-" + end_month + "-" + end_date + " " + end_hour + ":" + end_minute
+        }
     
-    #將資料傳送到連接資料庫的文件
-    from connect_database import check
-    message1 = check(response_data)
-    print(message1)
-    
-    return message1
+        #將資料傳送到連接資料庫的文件
+        from connect_database import check
+        message1 = check(response_data)
+        print(message1)
+        return jsonify(message1)
+    else:
+        #驗證失敗，返回錯誤
+        return jsonify({"error": "Invalid input"}), 400 
 
 @app.route("/vdata", methods=["POST"])
 def vdata():
+    def is_valid_date(year, month, day):
+        try:
+            datetime(int(year), int(month), int(day))
+            return True
+        except ValueError:
+            return False    
+    
     viewYear = request.form.get("viewYear")
     viewMonth = request.form.get("viewMonth")
     viewDate = request.form.get("viewDate")
+    
+    if (is_valid_date(viewYear, viewMonth, viewDate)):
+        
+        print(f"viewYear: {viewYear}")
+        print(f"viewMonth: {viewMonth}")
+        print(f"viewDate: {viewDate}")
 
-    print(f"viewYear: {viewYear}")
-    print(f"viewMonth: {viewMonth}")
-    print(f"viewDate: {viewDate}")
+        response_data = {
+            "viewTime": viewYear + "-" + viewMonth + "-" + viewDate
+        }
+        from connect_database import view
+        message2 = view(response_data)
 
-    response_data = {
-        "viewTime": viewYear + "-" + viewMonth + "-" + viewDate
-    }
-    from connect_database import view
-    message2 = view(response_data)
+        if not message2:
+            return "當日無預約資料"  # 如果沒有資料，返回相應的消息
 
-    if not message2:
-        return "當日無預約資料"  # 如果沒有資料，返回相應的消息
+        table = "<table border='1'>"
+        table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>員工號碼</th><th>會議室</th></tr>"
 
-    table = "<table border='1'>"
-    table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>員工號碼</th><th>會議室</th></tr>"
+        for index, item in enumerate(message2):
+            row_class = "even" if index % 2 == 0 else "odd"
+            table += f"<tr class='{row_class}'>"
+            table += f"<td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['c_id']}</td><td>{item['room_no']}</td>"
+            table += "</tr>"
 
-    for index, item in enumerate(message2):
-        row_class = "even" if index % 2 == 0 else "odd"
-        table += f"<tr class='{row_class}'>"
-        table += f"<td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['c_id']}</td><td>{item['room_no']}</td>"
-        table += "</tr>"
-
-    table += "</table>"
-
-    return table
+        table += "</table>"
+        return jsonify(table)
+    else:
+        #驗證失敗，返回錯誤
+        return jsonify({"error": "Invalid input"}), 400 
+    
 
 @app.route("/mdata", methods=["POST"])
 def mdata():

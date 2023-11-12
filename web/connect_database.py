@@ -80,8 +80,8 @@ def modify(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
-                m_id_query = "SELECT r_no, r_start, r_end, room_no, c_id FROM reserve WHERE c_id = %s ORDER BY r_no ASC"
-                cursor.execute(m_id_query, (m_id,))
+                c_id_query = "SELECT r_no, r_start, r_end, room_no, c_id FROM reserve WHERE c_id = %s ORDER BY r_no ASC"
+                cursor.execute(c_id_query, (m_id,))
                 results = cursor.fetchall()
                 return results
     except pymysql.MySQLError as e:
