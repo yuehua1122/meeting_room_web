@@ -77,11 +77,6 @@ def rdata():
         is_valid_time(end_hour, end_minute)):
         #所有驗證通過
            
-        print(f"c_id: {c_id}")
-        print(f"room: {room}")
-        print(f"r_start: {start_year,start_month,start_date,start_hour,start_minute}")
-        print(f"r_end: {end_year,end_month,end_date,end_hour,end_minute}")
-
         # 建立回應資料
         response_data = {
             "c_id": c_id,
@@ -114,10 +109,6 @@ def vdata():
     
     if (is_valid_date(viewYear, viewMonth, viewDate)):
         
-        print(f"viewYear: {viewYear}")
-        print(f"viewMonth: {viewMonth}")
-        print(f"viewDate: {viewDate}")
-
         response_data = {
             "viewTime": viewYear + "-" + viewMonth + "-" + viewDate
         }
@@ -146,8 +137,7 @@ def vdata():
 @app.route("/mdata", methods=["POST"])
 def mdata():
     m_id = request.form.get("m_id")
-    print(f"m_id: {m_id}")
-    
+       
     response_data = {"m_id": m_id}
     from connect_database import modify
     message3 = modify(response_data)
@@ -169,9 +159,7 @@ def mdata():
 def delete():
     c_id = request.form.get("c_id")
     r_no = request.form.get("r_no")
-    print(f"r_no: {r_no}")
-    print(f"c_id: {c_id}")
-    
+        
     response_data = {"r_no": r_no,"c_id": c_id}
     from connect_database import delete
     message4 = delete(response_data)
