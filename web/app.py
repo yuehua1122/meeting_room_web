@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, make_response
-from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect
 from datetime import datetime
 from markupsafe import escape
 import re,os
