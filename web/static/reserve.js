@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
           // 在此處理回應資料，可以顯示成功消息或執行其他操作
           const MessageLabel = document.getElementById("message1");
-          const newMessage = DOMPurify.sanitize(data.replace( /&/g , "<br>"));
+          const newMessage = DOMPurify.sanitize(data.replace(/&amp;/g, "<br>"));
           MessageLabel.innerHTML = newMessage;    
         })
         .catch(error => {

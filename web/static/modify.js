@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
           method: "POST",
           body: formData,
         })
-        .then(response => response.text())
+        .then(response => response.json())
         .then(data => {
           // 在此處理回應資料，可以顯示成功消息或執行其他操作
           const MessageLabel = document.getElementById("message3");

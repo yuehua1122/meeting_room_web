@@ -1,10 +1,8 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify, make_response
 from flask_wtf import CSRFProtect
 from datetime import datetime
+from markupsafe import escape
 import re,os
-
-db = SQLAlchemy()
 
 #先設好Flask
 #static_folder設置告訴Flask在哪裡查找靜態資源文件。
@@ -88,8 +86,8 @@ def rdata():
         #將資料傳送到連接資料庫的文件
         from connect_database import check
         message1 = check(response_data)
-        print(message1)
-        return jsonify(message1)
+        escaped_message = escape(message1)
+        return jsonify(escaped_message)
     else:
         #驗證失敗，返回錯誤
         return jsonify({"error": "Invalid input"}), 400 
@@ -116,19 +114,19 @@ def vdata():
         message2 = view(response_data)
 
         if not message2:
-            return "當日無預約資料"  # 如果沒有資料，返回相應的消息
+            return jsonify("當日無預約資料")  # 如果沒有資料，返回相應的消息
+        else:
+            table = "<table border='1'>"
+            table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>員工號碼</th><th>會議室</th></tr>"
 
-        table = "<table border='1'>"
-        table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>員工號碼</th><th>會議室</th></tr>"
+            for index, item in enumerate(message2):
+                row_class = "even" if index % 2 == 0 else "odd"
+                table += f"<tr class='{row_class}'>"
+                table += f"<td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['c_id']}</td><td>{item['room_no']}</td>"
+                table += "</tr>"
 
-        for index, item in enumerate(message2):
-            row_class = "even" if index % 2 == 0 else "odd"
-            table += f"<tr class='{row_class}'>"
-            table += f"<td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['c_id']}</td><td>{item['room_no']}</td>"
-            table += "</tr>"
-
-        table += "</table>"
-        return jsonify(table)
+            table += "</table>"
+            return jsonify(table)
     else:
         #驗證失敗，返回錯誤
         return jsonify({"error": "Invalid input"}), 400 
@@ -136,46 +134,61 @@ def vdata():
 
 @app.route("/mdata", methods=["POST"])
 def mdata():
-    m_id = request.form.get("m_id")
-       
-    response_data = {"m_id": m_id}
-    from connect_database import modify
-    message3 = modify(response_data)
-            
-    if not message3:
-        return "查無該ID的預約資料"  # 如果沒有資料，返回相應的消息
+    def is_valid_m_id(m_id):
+        return re.match(r'^B\d{7}$', m_id) is not None
     
-    table = "<table border='1'>"
-    table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
+    m_id = request.form.get("m_id")
+    
+    if (is_valid_m_id(m_id)):
+       
+        response_data = {"m_id": m_id}
+        from connect_database import modify
+        message3 = modify(response_data)
+                
+        if not message3:
+            return jsonify("查無該ID的預約資料")  # 如果沒有資料，返回相應的消息
+        
+        table = "<table border='1'>"
+        table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
 
-    for item in message3:   
-        table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
-        table += f"<td><input type='hidden' name='r_no' value='{item['r_no']}'><input type='hidden' name='c_id' value='{item['c_id']}'><button type='submit'>刪除</button></td></tr>"
-            
-    table += "</table>"
-    return table
+        for item in message3:   
+            table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
+            table += f"<td><input type='hidden' name='r_no' value='{item['r_no']}'><input type='hidden' name='c_id' value='{item['c_id']}'><button type='submit'>刪除</button></td></tr>"
+                
+        table += "</table>"
+        return jsonify(table)
+    else:
+        #驗證失敗，返回錯誤
+        return jsonify({"error": "Invalid input"}), 400 
 
 @app.route('/delete', methods=['POST'])
 def delete():
+    def is_valid_c_id(c_id):
+        return re.match(r'^B\d{7}$', c_id) is not None
+
     c_id = request.form.get("c_id")
     r_no = request.form.get("r_no")
+    
+    if (is_valid_c_id(c_id)): 
         
-    response_data = {"r_no": r_no,"c_id": c_id}
-    from connect_database import delete
-    message4 = delete(response_data)
-    if not message4:
-        return "查無該ID的預約資料"  # 如果沒有資料，返回相應的消息
-    
-    table = "<table border='1'>"
-    table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
+        response_data = {"r_no": r_no,"c_id": c_id}
+        from connect_database import delete
+        message4 = delete(response_data)
+        if not message4:
+            return jsonify("查無該ID的預約資料")  # 如果沒有資料，返回相應的消息
+        
+        table = "<table border='1'>"
+        table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
 
-    for item in message4:   
-        table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
-        table += f"<td><button type='submit'>刪除</button></td></tr>"
-            
-    table += "</table>"
-    return table
-    
+        for item in message4:   
+            table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
+            table += f"<td><button type='submit'>刪除</button></td></tr>"
+                
+        table += "</table>"
+        return jsonify(table)
+    else:
+        #驗證失敗，返回錯誤
+        return jsonify({"error": "Invalid input"}), 400     
 
 @app.route("/ndata", methods=["POST"])
 def ndata():
