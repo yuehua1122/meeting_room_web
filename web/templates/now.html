@@ -26,12 +26,43 @@
                 <h2>即時狀況</h2>
                 <form id="nForm" action="/ndata" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <select id="room" name="meetroom">
+                        <option>A001</option>
+                        <option>A002</option>
+                        <option>A003</option>
+                        <option>A004</option>
+                        <option>A005</option>
+                        <option>A006</option>
+                        <option>A007</option>
+                        <option>A008</option>
+                        <option>A009</option>
+                        <option>A010</option>
+                        <option>A011</option>
+                        <option>A012</option>
+                        <option>A013</option>
+                        <option>A014</option>
+                        <option>A015</option>
+                        <option>A016</option>
+                        <option>A017</option>
+                        <option>A018</option>
+                        <option>A019</option>
+                        <option>A020</option>
+                        <option>A021</option>
+                        <option>A022</option>
+                        <option>A023</option>
+                        <option>A024</option>
+                        <option>A025</option>                    
+                    </select>
+                    <br>
+                    <br>
                     <button class="btnright" >確認</button>
                 </form>
+                <br>
+                <label id="message5">{{ message5 }}</label>
             </div> 
         </div>
-        <script src="vtime.js"></script>
         <script src="action.js"></script>
-        <script src="view.js"></script>
+        <script src="now.js"></script>
+        <script src="https://unpkg.com/dompurify/dist/purify.min.js"></script>
     </body>
 </html>

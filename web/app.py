@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, session
 from flask_wtf.csrf import CSRFProtect
 from datetime import datetime
 from markupsafe import escape
-import re,os
+import re,os,base64
 
 #先設好Flask
 #static_folder設置告訴Flask在哪裡查找靜態資源文件。
@@ -12,7 +12,7 @@ app = Flask(
     static_folder="static",
     static_url_path="/"
 )
-app.config['SECRET_KEY'] = os.urandom(24)  # 替換成一個強隨機值
+app.config['SECRET_KEY'] = base64.b64encode(os.urandom(32)).decode('utf-8')  # 替換成一個強隨機值
 csrf = CSRFProtect(app)
 
 # 主頁
@@ -192,7 +192,14 @@ def delete():
 
 @app.route("/ndata", methods=["POST"])
 def ndata():
-    return
+    
+    room = request.form.get("meetroom")
+    response_data = {"room": room}
+    from connect_database import now
+    message5 = now(response_data)
+    print(message5)
+    return jsonify(message5)
+    
 
 
 if __name__ == "__main__":
