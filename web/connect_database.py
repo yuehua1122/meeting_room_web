@@ -1,5 +1,5 @@
 # connect_database.py
-import pymysql
+import pymysql,re
 
 # 資料庫參數設定
 connection_params = {
@@ -12,6 +12,10 @@ connection_params = {
     "cursorclass": pymysql.cursors.DictCursor
 }
 
+def contains_special_characters(string):
+    """ 检查字符串是否包含特殊字符 """
+    return bool(re.search('[^A-Za-z0-9]', string))
+
 def check(data):
     try:
         c_id = data["c_id"]
@@ -23,6 +27,9 @@ def check(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
+                if contains_special_characters(c_id) or contains_special_characters(r_start) or contains_special_characters(r_end) or contains_special_characters(room):
+                    raise ValueError("Input contains special characters.")                
+                
                 # 檢查 c_id 是否存在
                 check_id_sql = "SELECT c_id FROM customer WHERE c_id = %s"
                 cursor.execute(check_id_sql, (c_id,))
@@ -42,7 +49,7 @@ def check(data):
                 cursor.execute(check_time_and_room_sql, (room, r_start, r_start, r_end, r_end, r_start, r_end,))
                 if cursor.rowcount > 0:
                     return "預約失敗，會議室已被預定!"
-                                
+                                    
                 # 插入預約
                 insert_sql = "INSERT INTO reserve (r_start, r_end, c_id, room_no) VALUES (%s, %s, %s, %s)"
                 cursor.execute(insert_sql, (r_start, r_end, c_id, room,))    
@@ -59,7 +66,7 @@ def view(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
-                view_time_query = "SELECT * FROM reserve WHERE (DATE(r_start) <= %s AND DATE(r_end) >= %s)AND r_del ORDER BY r_no ASC"
+                view_time_query = "SELECT * FROM reserve WHERE (DATE(r_start) <= %s AND DATE(r_end) >= %s) ORDER BY r_no ASC"
                 cursor.execute(view_time_query, (viewTime, viewTime,))
                 results = cursor.fetchall()
         
@@ -81,7 +88,7 @@ def modify(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
-                c_id_query = "SELECT r_no, r_start, r_end, room_no, c_id FROM reserve WHERE c_id = %s AND r_del = FALSE ORDER BY r_no ASC"
+                c_id_query = "SELECT r_no, r_start, r_end, room_no, c_id FROM reserve WHERE c_id = %s AND r_del = 0 ORDER BY r_no ASC"
                 cursor.execute(c_id_query, (m_id,))
                 results = cursor.fetchall()
                 return results
@@ -100,19 +107,19 @@ def delete(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
-                c_id_query = "SELECT r_no, r_start, r_end, room_no FROM reserve WHERE c_id = %s AND r_del = FALSE ORDER BY r_no ASC"
+                c_id_query = "SELECT r_no, r_start, r_end, room_no FROM reserve WHERE c_id = %s AND r_del = 0 ORDER BY r_no ASC"
                 cursor.execute(c_id_query, (c_id,))
                 results = cursor.fetchall()
                 return results
     except pymysql.MySQLError as e:
         return "資料庫連接錯誤，無法查詢預約資料"
-    
+
 def now(data):
     try:  
         room = data["room"]
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor: 
-                # 檢查是否為有效預約
+                # 首先检查是否有有效的预约
                 query = """
                 SELECT 
                     CASE 
@@ -128,28 +135,11 @@ def now(data):
                 """
                 cursor.execute(query, (room,))
                 result = cursor.fetchone()
-
-                # 如果預約有效，再檢查預約紀錄
-                if result and result['room_status'] == '使用中':
-                    sign_query = """
-                    SELECT * FROM sign 
-                    WHERE 
-                        room_no = %s AND 
-                        s_in <= DATE_ADD(r_start, INTERVAL 5 MINUTE)
-                    """
-                    cursor.execute(sign_query, (room,))
-                    sign_result = cursor.fetchone()
-
-                    # 如果沒有在5分鐘內簽到，則轉為空室
-                    if not sign_result:
-                        return '空室'
-
                 return result['room_status'] if result else '查無資料'
                 
     except pymysql.MySQLError as e:
-        return "資料庫連接錯誤，無法查詢預約資料"
-            
-            
+        return f"資料庫連接錯誤，無法查詢預約資料: {e}"
+
     
     
     
