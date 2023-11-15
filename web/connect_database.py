@@ -27,9 +27,6 @@ def check(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
-                if contains_special_characters(c_id) or contains_special_characters(r_start) or contains_special_characters(r_end) or contains_special_characters(room):
-                    raise ValueError("Input contains special characters.")                
-                
                 # 檢查 c_id 是否存在
                 check_id_sql = "SELECT c_id FROM customer WHERE c_id = %s"
                 cursor.execute(check_id_sql, (c_id,))
