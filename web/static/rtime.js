@@ -11,32 +11,39 @@ const endDateSelect = document.getElementById("EndDate");
 const endHourSelect = document.getElementById("EndHour");
 const endMinuteSelect = document.getElementById("EndMinute");
 
-// 獲取當前年分
-const currentYear = new Date().getFullYear();
+// 獲取當前日期和時間
+const currentDateTime = new Date();
+const currentYear = currentDateTime.getFullYear();
+const currentMonth = currentDateTime.getMonth() + 1; // 月份是從0開始的，所以要加1
+const currentDay = currentDateTime.getDate();
+const currentHour = currentDateTime.getHours();
+const currentMinute = currentDateTime.getMinutes();
 
 // 在年份選擇框上添加事件監聽器
 startYearSelect.addEventListener("change", updateStartDateOptions);
 endYearSelect.addEventListener("change", updateEndDateOptions);
 
+// 頁面加載時初始化
+updateYearOptions();
+updateStartDateOptions();
+updateEndDateOptions();
+
 // 動態生成年份選項
 function updateYearOptions() {
-    // 先清空年份年分
-    startYearSelect.innerHTML = '';
-    endYearSelect.innerHTML = '';
+    // 定義年份範圍
+    const startYear = currentYear;
+    const endYear = startYear + 5;
 
-    // 再生成年份選項
-    for (let year = currentYear; year <= currentYear+5; year++) {
-        const option = document.createElement("option");
-        option.value = year;
-        option.text = year;
-        option.setAttribute("name", "start_hour"); // 設置 name 屬性
-        startYearSelect.appendChild(option);
-        endYearSelect.appendChild(option.cloneNode(true)); // 複製年份選項至結束年份的選項
+    // 清空年份選項
+    clearOptions(startYearSelect);
+    clearOptions(endYearSelect);
+
+    // 生成年份選項
+    for (let year = startYear; year <= endYear; year++) {
+        addOption(startYearSelect, year);
+        addOption(endYearSelect, year);
     }
 }
-
-// 頁面加載時先更新一次
-updateYearOptions();
 
 // 在月份選擇框上添加事件監聽器
 startMonthSelect.addEventListener("change", updateStartDateOptions);
@@ -46,109 +53,134 @@ endMonthSelect.addEventListener("change", updateEndDateOptions);
 updateStartDateOptions();
 updateEndDateOptions();
 
+// 定義更新日期選項的函數
+function updateDateOptions(yearSelect, monthSelect, dateSelect, selectedDate) {
+    const selectedYear = parseInt(yearSelect.value);
+    const selectedMonth = parseInt(monthSelect.value);
+
+    // 計算選定月份的天數
+    const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+
+    // 清空日期選項
+    clearOptions(dateSelect);
+
+    // 生成日期選項
+    for (let i = 1; i <= daysInMonth; i++) {
+        addOption(dateSelect, i);
+    }
+
+    // 設定預設選擇日期
+    if (selectedDate) {
+        dateSelect.value = selectedDate;
+    }
+}
+
+// 定義更新小時和分鐘選項的函數
+function updateTimeOptions(hourSelect, minuteSelect, selectedHour, selectedMinute) {
+    // 清空小時和分鐘選項
+    clearOptions(hourSelect);
+    clearOptions(minuteSelect);
+
+    // 生成小時選項（00 到 23）
+    for (let i = 0; i < 24; i++) {
+        addOption(hourSelect, i);
+    }
+
+    // 生成分鐘選項（00 到 50，每隔 10 分鐘）
+    for (let i = 0; i < 60; i += 10) {
+        addOption(minuteSelect, i);
+    }
+
+    // 設定預設選擇時間
+    if (selectedHour) {
+        hourSelect.value = selectedHour;
+    }
+    if (selectedMinute) {
+        minuteSelect.value = selectedMinute;
+    }
+}
+
+// 定義更新起始日期選項的函數
+function updateStartDateOptions() {
+    const selectedStartYear = parseInt(startYearSelect.value);
+    const selectedStartMonth = parseInt(startMonthSelect.value);
+
+    // 清空日期、小時和分鐘選項
+    clearOptions(startDateSelect);
+    clearOptions(startHourSelect);
+    clearOptions(startMinuteSelect);
+
+    // 動態生成日期選項
+    updateDateOptions(startYearSelect, startMonthSelect, startDateSelect, currentDay);
+
+    // 動態生成小時和分鐘選項
+    updateTimeOptions(startHourSelect, startMinuteSelect, currentHour, getNearestMinute(currentMinute));
+}
+
+// 定義更新結束日期選項的函數
+function updateEndDateOptions() {
+    const selectedEndYear = parseInt(endYearSelect.value);
+    const selectedEndMonth = parseInt(endMonthSelect.value);
+
+    // 清空日期、小時和分鐘選項
+    clearOptions(endDateSelect);
+    clearOptions(endHourSelect);
+    clearOptions(endMinuteSelect);
+
+    // 動態生成日期選項
+    updateDateOptions(endYearSelect, endMonthSelect, endDateSelect, currentDay);
+
+    // 動態生成小時和分鐘選項
+    updateTimeOptions(endHourSelect, endMinuteSelect, currentHour + 1, getNearestMinute(currentMinute));
+}
+
+// 取得離自己最近的10分鐘
+function getNearestMinute(currentMinute) {
+    if(currentMinute<50){
+        const remainder = currentMinute % 10;
+        return remainder === 0 ? currentMinute : currentMinute + (10 - remainder);
+    }
+    else{
+        const remainder  = 0;
+        return remainder ;
+    }
+}
+
 // 判斷是否為閏年的函數
 function isLeapYear(year) {
     return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
 }
 
-// 定義更新日期選項的函數
-function updateStartDateOptions() {
-    // 清空日期、小時和分鐘選項
-    startDateSelect.innerHTML = '';
-    startHourSelect.innerHTML = '';
-    startMinuteSelect.innerHTML = '';
-
-    const selectedStartYear = parseInt(startYearSelect.value);
-    // 獲取所選月份的值
-    const selectedStartMonth = parseInt(startMonthSelect.value);
-
-    // 起始月份動態生成日期選項
-    let startDays = 31; // 默認為31天
-    if (selectedStartMonth === 2) {
-        // 如果所選的是二月
-        if (isLeapYear(selectedStartYear)) {
-            startDays = 29; // 閏年二月有29天
-        } else {
-            startDays = 28; // 平年二月有28天
-        }
-    } else if ([4, 6, 9, 11].includes(selectedStartMonth)) {
-        // 4、6、9、11月每月30天
-        startDays = 30;
-    }
-
-    for (let i = 1; i <= startDays; i++) {
-        const option = document.createElement("option");
-        option.text = i;
-        option.setAttribute("name", "start_date"); // 設置 name 屬性
-        startDateSelect.appendChild(option);
-    }
-
-    // 生成小時選項（00 到 23）
-    for (let i = 0; i < 24; i++) {
-        const option = document.createElement("option");
-        const hourValue = i < 10 ? `0${i}` : `${i}`;
-        option.value = hourValue;
-        option.text = hourValue;
-        option.setAttribute("name", "start_hour"); // 設置 name 屬性
-        startHourSelect.appendChild(option);
-    }
-
-    // 生成分鐘選項（00 到 50，每隔 10 分鐘）
-    for (let i = 0; i < 60; i += 10) {
-        const option = document.createElement("option");
-        const minuteValue = i < 10 ? `0${i}` : `${i}`;//若分鐘小於10則在十位數字補0
-        option.value = minuteValue;
-        option.text = minuteValue;
-        option.setAttribute("name", "start_minute"); // 設置 name 屬性
-        startMinuteSelect.appendChild(option);
+// 獲取指定年份和月份的天數
+function getDaysInMonth(year, month) {
+    if ([4, 6, 9, 11].includes(month)) {
+        return 30;
+    } else if (month === 2) {
+        return isLeapYear(year) ? 29 : 28;
+    } else {
+        return 31;
     }
 }
 
-function updateEndDateOptions() {
-    endDateSelect.innerHTML = '';
-    endHourSelect.innerHTML = '';
-    endMinuteSelect.innerHTML = '';
-
-    const selectedEndYear = parseInt(endYearSelect.value);
-    const selectedEndMonth = parseInt(endMonthSelect.value);
-
-    // 結束月份動態生成日期選項
-    let endDays = 31; // 默認為31天
-    if (selectedEndMonth == 2) {
-        // 如果所選的是二月
-        if (isLeapYear(selectedEndYear)) {
-            endDays = 29; // 閏年二月有29天
-        } else {
-            endDays = 28; // 平年二月有28天
-        }
-    } else if ([4, 6, 9, 11].includes(selectedEndMonth)) {
-        // 4、6、9、11月每月30天
-        endDays = 30;
-    }
-
-    for (let i = 1; i <= endDays; i++) {
-        const option = document.createElement("option");
-        option.text = i;
-        endDateSelect.appendChild(option);
-    }
-
-    // 生成小時選項（00 到 23）
-    for (let i = 0; i < 24; i++) {
-        const option = document.createElement("option");
-        const hourValue = i < 10 ? `0${i}` : `${i}`;
-        option.value = hourValue;
-        option.text = hourValue;
-        option.setAttribute("name", "end_hour"); // 設置 name 屬性
-        endHourSelect.appendChild(option);
-    }
-
-    // 生成分鐘選項（00 到 50，每隔 10 分钟）
-    for (let i = 0; i < 60; i += 10) {
-        const option = document.createElement("option");
-        const minuteValue = i < 10 ? `0${i}` : `${i}`;//若分鐘小於10則在十位數字補0
-        option.value = minuteValue;
-        option.text = minuteValue;
-        option.setAttribute("name", "end_minutem"); // 設置 name 屬性
-        endMinuteSelect.appendChild(option);
-    }
+// 清空選擇框的選項
+function clearOptions(select) {
+    select.innerHTML = '';
 }
+
+// 添加選項到選擇框
+function addOption(select, value) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.text = value < 10 ? `0${value}` : `${value}`; // 若數字小於10，在前面補0
+    select.appendChild(option);
+}
+
+// 設定預設選擇日期
+startYearSelect.value = currentYear;
+startMonthSelect.value = currentMonth;
+endYearSelect.value = currentYear;
+endMonthSelect.value = currentMonth;
+updateStartDateOptions();
+updateEndDateOptions();
+endDateSelect.value = currentDay;
+startDateSelect.value = currentDay;

@@ -1,5 +1,5 @@
 # connect_database.py
-import pymysql,re
+import pymysql
 
 # 資料庫參數設定
 connection_params = {
@@ -12,16 +12,13 @@ connection_params = {
     "cursorclass": pymysql.cursors.DictCursor
 }
 
-def contains_special_characters(string):
-    """ 检查字符串是否包含特殊字符 """
-    return bool(re.search('[^A-Za-z0-9]', string))
-
 def check(data):
     try:
         c_id = data["c_id"]
         r_start = data["r_start"]
         r_end = data["r_end"]
         room = data["room"]
+        topic = data["topic"]
         successful_message = ' '
 
         # 建立資料庫連接
@@ -33,6 +30,11 @@ def check(data):
                 if cursor.rowcount == 0:
                     return "預約失敗，ID不存在!"
                 
+                # 檢查 room 是否存在
+                check_room_sql = "SELECT room_no FROM room WHERE room_no = %s"
+                cursor.execute(check_room_sql, (room,))
+                if cursor.rowcount == 0:
+                    return "無此會議室，請重新預約!"                
             
                 # 檢查特定的會議室在特定時間是否已被預定
                 check_time_and_room_sql = """ 
@@ -48,9 +50,9 @@ def check(data):
                     return "預約失敗，會議室已被預定!"
                                     
                 # 插入預約
-                insert_sql = "INSERT INTO reserve (r_start, r_end, c_id, room_no) VALUES (%s, %s, %s, %s)"
-                cursor.execute(insert_sql, (r_start, r_end, c_id, room,))    
-                successful_message = "預約成功!&" + "預約ID : " + c_id + "&會議室 : " + room + "&從 " + r_start + " 到 " + r_end 
+                insert_sql = "INSERT INTO reserve (r_start, r_end, c_id, room_no, topic) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(insert_sql, (r_start, r_end, c_id, room, topic))    
+                successful_message = "預約成功!&" + "預約ID : " + c_id + "&會議室 : " + room + "&會議主題 : " + topic + "&從 " + r_start + " 到 " + r_end 
             connection.commit()
         return successful_message
     except pymysql.MySQLError as e:
@@ -67,15 +69,15 @@ def view(data):
                 cursor.execute(view_time_query, (viewTime, viewTime,))
                 results = cursor.fetchall()
         
-        # 重新編號 r_no
-        new_results = []
-        new_r_no = 1
-        for result in results:
-            result["r_no"] = new_r_no
-            new_results.append(result)
-            new_r_no += 1
-        
-        return new_results
+            # 重新編號 r_no
+            new_results = []
+            new_r_no = 1
+            for result in results:
+                result["r_no"] = new_r_no
+                new_results.append(result)
+                new_r_no += 1
+            
+            return new_results
     except pymysql.MySQLError as e:
         return "尚未連接資料庫"  # 或者返回其他適當的錯誤訊息
 

@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify
 from flask_wtf.csrf import CSRFProtect
 from datetime import datetime
 from markupsafe import escape
-import re,os,base64
+import re,os
 
 #先設好Flask
 #static_folder設置告訴Flask在哪裡查找靜態資源文件。
@@ -12,7 +12,7 @@ app = Flask(
     static_folder="static",
     static_url_path="/"
 )
-app.config['SECRET_KEY'] = base64.b64encode(os.urandom(32)).decode('utf-8')  # 替換成一個強隨機值
+app.config['SECRET_KEY'] = os.urandom(24) # 替換成一個強隨機值
 csrf = CSRFProtect(app)
 
 # 主頁
@@ -56,6 +56,7 @@ def rdata():
     
     c_id = request.form.get("c_id")
     room = request.form.get("meetroom")
+    topic = request.form.get("topic")
     start_year = request.form.get("start_year")
     start_month = request.form.get("start_month")
     start_date = request.form.get("start_date")
@@ -79,6 +80,7 @@ def rdata():
         response_data = {
             "c_id": c_id,
             "room": room,
+            "topic": topic,
             "r_start": start_year + "-" + start_month + "-" + start_date + " " + start_hour + ":" + start_minute,
             "r_end": end_year + "-" + end_month + "-" + end_date + " " + end_hour + ":" + end_minute
         }
@@ -139,8 +141,7 @@ def mdata():
     
     m_id = request.form.get("m_id")
     
-    if (is_valid_m_id(m_id)):
-       
+    if (is_valid_m_id(m_id)):       
         response_data = {"m_id": m_id}
         from connect_database import modify
         message3 = modify(response_data)
