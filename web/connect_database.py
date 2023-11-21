@@ -1,13 +1,13 @@
 # connect_database.py
-import pymysql
+import pymysql,os
 
 # 資料庫參數設定
 connection_params = {
-    "host": "127.0.0.1",
-    "port": 3306,
-    "user": "root",
-    "password": "kevinbear60404",
-    "db": "meeting room",
+    "host": os.environ.get("DB_HOST"),
+    "port": os.environ.get("DB_PORT"),
+    "user": os.environ.get("DB_USER"),
+    "password": os.environ.get("DB_PASSWORD"),
+    "db": os.environ.get("DB_NAME"),
     "charset": "utf8",
     "cursorclass": pymysql.cursors.DictCursor
 }
@@ -138,18 +138,3 @@ def now(data):
                 
     except pymysql.MySQLError as e:
         return f"資料庫連接錯誤，無法查詢預約資料: {e}"
-
-    
-    
-    
- 
-
- 
-
-
-    
-
-
-
-
-   
