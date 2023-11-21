@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect,generate_csrf
 from datetime import datetime
 from markupsafe import escape
 import re,os
@@ -33,7 +33,14 @@ def modify():
 # 即時狀況
 @app.route("/now")
 def now():
-    return render_template("now.html")
+    from connect_database import now
+    message5 = now()
+    table = "<table border='1'>"
+    table += "<tr><th>會議室</th><th>即時狀況</th></tr>"
+    for item in message5:
+        table += f"<tr><td>{item['room_no']}</td><td>{item['room_status']}</td></tr>"
+    table += "</table>"
+    return render_template('now.html', table=table)
 
 # 處理預約資料
 @app.route("/rdata", methods=["POST"])
@@ -75,7 +82,7 @@ def rdata():
         is_valid_date(end_year, end_month, end_date) and
         is_valid_time(end_hour, end_minute)):
         #所有驗證通過
-           
+        
         # 建立回應資料
         response_data = {
             "c_id": c_id,
@@ -136,12 +143,13 @@ def vdata():
 
 @app.route("/mdata", methods=["POST"])
 def mdata():
+    csrf_token = generate_csrf()
     def is_valid_m_id(m_id):
         return re.match(r'^B\d{7}$', m_id) is not None
     
     m_id = request.form.get("m_id")
+    if (is_valid_m_id(m_id)):
     
-    if (is_valid_m_id(m_id)):       
         response_data = {"m_id": m_id}
         from connect_database import modify
         message3 = modify(response_data)
@@ -154,7 +162,11 @@ def mdata():
 
         for item in message3:   
             table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
-            table += f"<td><input type='hidden' name='r_no' value='{item['r_no']}'><input type='hidden' name='c_id' value='{item['c_id']}'><button type='submit'>刪除</button></td></tr>"
+            table += f"<td><form id = 'dform' method='POST' action='/delete'>"
+            table += f"<input type='hidden' name='csrf_token' value='{ csrf_token}'/>"
+            table += f"<input type='hidden' name='r_no' value='{item['r_no']}'>"
+            table += f"<input type='hidden' name='c_id' value='{item['c_id']}'>"
+            table += f"<button type='submit'>刪除</button></form></td></tr>"
                 
         table += "</table>"
         return jsonify(table)
@@ -166,7 +178,7 @@ def mdata():
 def delete():
     def is_valid_c_id(c_id):
         return re.match(r'^B\d{7}$', c_id) is not None
-
+    
     c_id = request.form.get("c_id")
     r_no = request.form.get("r_no")
     
@@ -176,7 +188,7 @@ def delete():
         from connect_database import delete
         message4 = delete(response_data)
         if not message4:
-            return jsonify("查無該ID的預約資料")  # 如果沒有資料，返回相應的消息
+            return render_template("nodata.html")  # 如果沒有資料，返回相應的消息
         
         table = "<table border='1'>"
         table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>會議室</th><th>操作</th></tr>"
@@ -185,23 +197,10 @@ def delete():
             table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
             table += f"<td><button type='submit'>刪除</button></td></tr>"
                 
-        table += "</table>"
-        return jsonify(table)
+        return render_template("sucessdelete.html")
     else:
         #驗證失敗，返回錯誤
         return jsonify({"error": "Invalid input"}), 400     
-
-@app.route("/ndata", methods=["POST"])
-def ndata():
-    
-    room = request.form.get("meetroom")
-    response_data = {"room": room}
-    from connect_database import now
-    message5 = now(response_data)
-    print(message5)
-    return jsonify(message5)
-    
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5000)

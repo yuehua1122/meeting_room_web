@@ -27,7 +27,18 @@
                 <label>ID：</label>
                 <form id="mForm" action="/mdata" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="text" id="id" name="m_id" />
+                    <select id="id" name="m_id">
+                        <option>B1044109</option>
+                        <option>B1044124</option>
+                        <option>B1044127</option>
+                        <option>B1044147</option>
+                        <option>B1044150</option>
+                        <option>B1044220</option>
+                        <option>B1044222</option>
+                        <option>B1044234</option>
+                        <option>B1044252</option>
+                        <option>B1044269</option>
+                    </select>    
                     <br>
                     <br>
                     <button class="btnright" id="check" type="submit">確認</button>

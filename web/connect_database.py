@@ -4,7 +4,7 @@ import pymysql,os
 # 資料庫參數設定
 connection_params = {
     "host": os.environ.get("DB_HOST"),
-    "port": os.environ.get("DB_PORT"),
+    "port": int(os.environ.get("DB_PORT")),
     "user": os.environ.get("DB_USER"),
     "password": os.environ.get("DB_PASSWORD"),
     "db": os.environ.get("DB_NAME"),
@@ -35,7 +35,7 @@ def check(data):
                 cursor.execute(check_room_sql, (room,))
                 if cursor.rowcount == 0:
                     return "無此會議室，請重新預約!"                
-            
+                              
                 # 檢查特定的會議室在特定時間是否已被預定
                 check_time_and_room_sql = """ 
                 SELECT * FROM reserve 
@@ -53,6 +53,10 @@ def check(data):
                 insert_sql = "INSERT INTO reserve (r_start, r_end, c_id, room_no, topic) VALUES (%s, %s, %s, %s, %s)"
                 cursor.execute(insert_sql, (r_start, r_end, c_id, room, topic))    
                 successful_message = "預約成功!&" + "預約ID : " + c_id + "&會議室 : " + room + "&會議主題 : " + topic + "&從 " + r_start + " 到 " + r_end 
+                # 取得自動生成的 r_no
+                r_no = cursor.lastrowid
+                insert_sign_sql = "INSERT INTO sign (s_no, room_no, c_id) VALUES (%s, %s, %s)"
+                cursor.execute(insert_sign_sql,(r_no, room, c_id))
             connection.commit()
         return successful_message
     except pymysql.MySQLError as e:
@@ -97,9 +101,13 @@ def modify(data):
 def delete(data):
     r_no = data["r_no"]
     with pymysql.connect(**connection_params) as connection:
-        with connection.cursor() as cursor: 
-            update = "UPDATE reserve SET r_del = TRUE WHERE r_no = %s"
+        with connection.cursor() as cursor:
+            #更新reserve資料表的r_del變為1 
+            update = "UPDATE reserve SET r_del = 1 WHERE r_no = %s"
             cursor.execute(update, (r_no,))
+            #刪除sign資料表的簽到記錄
+            delete = "DELETE FROM sign WHERE s_no = %s"
+            cursor.execute(delete, (r_no,))
             connection.commit()
     try:            
         c_id = data["c_id"]
@@ -113,28 +121,60 @@ def delete(data):
     except pymysql.MySQLError as e:
         return "資料庫連接錯誤，無法查詢預約資料"
 
-def now(data):
+
+def now():
     try:  
-        room = data["room"]
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor: 
-                # 首先检查是否有有效的预约
+                # 首先檢查是否有有效的預約
                 query = """
+                WITH RankedSign AS (
+                    SELECT
+                        s_no,
+                        s_in,
+                        room_no,
+                        ROW_NUMBER() OVER (PARTITION BY room_no ORDER BY s_in DESC) AS rn
+                    FROM
+                        sign
+                )
                 SELECT 
+                    room.room_no,
                     CASE 
-                        WHEN COUNT(*) > 0 THEN '使用中'
+                        WHEN latest_reserve.r_start <= NOW() 
+                            AND latest_reserve.r_end >= NOW() 
+                            AND latest_reserve.r_del = 0 
+                            AND sign.s_in IS NOT NULL  -- 確保有簽入時間
+                            AND sign.s_in BETWEEN latest_reserve.r_start AND latest_reserve.r_end  -- 簽入時間在預約時段內
+                        THEN '使用中'
+                        WHEN latest_reserve.r_start <= NOW() 
+                            AND latest_reserve.r_end >= NOW() 
+                            AND latest_reserve.r_del = 0 
+                            AND sign.s_in IS NULL  -- 無簽入時間
+                        THEN '已經在預約時間內，但尚未有人簽入'
                         ELSE '空室'
                     END AS room_status
-                FROM reserve 
-                WHERE 
-                    room_no = %s AND 
-                    r_del = 0 AND 
-                    r_start <= NOW() AND 
-                    r_end >= NOW()
+                FROM 
+                    room
+                LEFT JOIN (
+                    SELECT 
+                        room_no,
+                        MAX(r_start) AS r_start,
+                        MAX(r_end) AS r_end,
+                        MAX(r_del) AS r_del
+                    FROM 
+                        reserve
+                    WHERE 
+                        NOW() BETWEEN r_start AND r_end
+                        AND r_del = 0
+                    GROUP BY 
+                        room_no
+                ) AS latest_reserve ON room.room_no = latest_reserve.room_no
+                LEFT JOIN RankedSign sign ON room.room_no = sign.room_no AND sign.rn = 1;
                 """
-                cursor.execute(query, (room,))
-                result = cursor.fetchone()
-                return result['room_status'] if result else '查無資料'
+                cursor.execute(query)  # 執行 SQL 查詢
+                results = cursor.fetchall()
+                print (results)
+                return results
                 
     except pymysql.MySQLError as e:
         return f"資料庫連接錯誤，無法查詢預約資料: {e}"

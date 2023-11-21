@@ -27,7 +27,18 @@
                 <form id="rForm" action="/rdata" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <label>ID：</label>
-                    <input type="text" id="id" name="c_id"/>
+                    <select id="id" name="c_id">
+                        <option>B1044109</option>
+                        <option>B1044124</option>
+                        <option>B1044127</option>
+                        <option>B1044147</option>
+                        <option>B1044150</option>
+                        <option>B1044220</option>
+                        <option>B1044222</option>
+                        <option>B1044234</option>
+                        <option>B1044252</option>
+                        <option>B1044269</option>
+                    </select>    
                     <label>&nbsp;&nbsp;會議室：</label>
                     <select id="room" name="meetroom">
                         <option>A001</option>

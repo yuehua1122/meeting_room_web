@@ -33,7 +33,7 @@ function updateMonthOptions() {
     for (let month = 1; month <= 12; month++) {
         const option = document.createElement("option");
         option.value = month;
-        option.text = month < 10 ? `0${month}` : `${month}`;
+        option.text = month;
         viewMonthSelect.appendChild(option);
     }
     viewMonthSelect.value = currentMonth;

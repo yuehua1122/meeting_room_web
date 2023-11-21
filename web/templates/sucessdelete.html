@@ -23,11 +23,15 @@
                 </form>
             </div>
             <div class="right">
-                <h2>即時狀況</h2>
-                {{ table|safe }}
-            </div> 
+                <h2>刪除結果</h2>
+                <label>刪除成功</label>
+                <form action="/modify" >
+                    <button class="btnleft" type="submit">返回</button>
+                </form>
         </div>
+        <script src="vtime.js"></script>
         <script src="action.js"></script>
+        <script src="view.js"></script>
         <script src="https://unpkg.com/dompurify/dist/purify.min.js"></script>
     </body>
 </html>
