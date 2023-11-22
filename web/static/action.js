@@ -45,9 +45,12 @@ function checkDates() {
     const startTime = new Date(startYear, startMonth - 1, startDate, startHour, startMinute);
     const endTime = new Date(endYear, endMonth - 1, endDate, endHour, endMinute);
 
+    // 獲取當前時間
+    var currentTime = new Date();
+
     // 比較日期和時間
-    if (startTime >= endTime) {
-        // 如果開始時間大於或等於結束時間，禁用按鈕
+    if (startTime >= endTime || startTime < currentTime) {
+        // 如果開始時間大於或等於結束時間，或者開始時間大於當前時間，禁用按鈕
         checkButton.disabled = true;
         checkButton.style.backgroundColor = "#bac4c3";
     } else {

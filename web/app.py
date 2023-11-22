@@ -126,12 +126,12 @@ def vdata():
             return jsonify("當日無預約資料")  # 如果沒有資料，返回相應的消息
         else:
             table = "<table border='1'>"
-            table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>員工號碼</th><th>會議室</th></tr>"
+            table += "<tr><th>預約開始時間</th><th>預約結束時間</th><th>用戶名</th><th>員工號碼</th><th>會議室</th></tr>"
 
             for index, item in enumerate(message2):
                 row_class = "even" if index % 2 == 0 else "odd"
                 table += f"<tr class='{row_class}'>"
-                table += f"<td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['c_id']}</td><td>{item['room_no']}</td>"
+                table += f"<td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['c_name']}</td><td>{item['c_id']}</td><td>{item['room_no']}</td>"
                 table += "</tr>"
 
             table += "</table>"
@@ -163,7 +163,7 @@ def mdata():
         for item in message3:   
             table += f"<tr><td>{item['r_start']}</td><td>{item['r_end']}</td><td>{item['room_no']}</td>"
             table += f"<td><form id = 'dform' method='POST' action='/delete'>"
-            table += f"<input type='hidden' name='csrf_token' value='{ csrf_token}'/>"
+            table += f"<input type='hidden' name='csrf_token' value='{csrf_token}'/>"
             table += f"<input type='hidden' name='r_no' value='{item['r_no']}'>"
             table += f"<input type='hidden' name='c_id' value='{item['c_id']}'>"
             table += f"<button type='submit'>刪除</button></form></td></tr>"

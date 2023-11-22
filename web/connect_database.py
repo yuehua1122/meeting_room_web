@@ -25,17 +25,20 @@ def check(data):
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
                 # 檢查 c_id 是否存在
-                check_id_sql = "SELECT c_id FROM customer WHERE c_id = %s"
+                check_id_sql = "SELECT c_id,c_name FROM customer WHERE c_id = %s"
                 cursor.execute(check_id_sql, (c_id,))
+                result = cursor.fetchone()
                 if cursor.rowcount == 0:
                     return "預約失敗，ID不存在!"
+                
+                # 取得顧客名字
+                c_name = result["c_name"]  
                 
                 # 檢查 room 是否存在
                 check_room_sql = "SELECT room_no FROM room WHERE room_no = %s"
                 cursor.execute(check_room_sql, (room,))
                 if cursor.rowcount == 0:
-                    return "無此會議室，請重新預約!"                
-                              
+                    return "無此會議室，請重新預約!"
                 # 檢查特定的會議室在特定時間是否已被預定
                 check_time_and_room_sql = """ 
                 SELECT * FROM reserve 
@@ -44,6 +47,7 @@ def check(data):
                     (r_start >= %s AND r_start <= %s) OR 
                     (r_end >= %s AND r_end <= %s)         
                 )AND r_del = 0
+
                 """
                 cursor.execute(check_time_and_room_sql, (room, r_start, r_start, r_end, r_end, r_start, r_end,))
                 if cursor.rowcount > 0:
@@ -52,7 +56,14 @@ def check(data):
                 # 插入預約
                 insert_sql = "INSERT INTO reserve (r_start, r_end, c_id, room_no, topic) VALUES (%s, %s, %s, %s, %s)"
                 cursor.execute(insert_sql, (r_start, r_end, c_id, room, topic))    
-                successful_message = "預約成功!&" + "預約ID : " + c_id + "&會議室 : " + room + "&會議主題 : " + topic + "&從 " + r_start + " 到 " + r_end 
+                successful_message = successful_message = (
+                    "預約成功!&" +
+                    "預約ID : " + c_id + "&" +
+                    "用戶名字 : " + c_name + "&" +
+                    "會議室 : " + room + "&" +
+                    "會議主題 : " + topic + "&" +
+                    "從 " + r_start + " 到 " + r_end
+                )
                 # 取得自動生成的 r_no
                 r_no = cursor.lastrowid
                 insert_sign_sql = "INSERT INTO sign (s_no, room_no, c_id) VALUES (%s, %s, %s)"
@@ -69,10 +80,16 @@ def view(data):
         # 建立資料庫連接
         with pymysql.connect(**connection_params) as connection:
             with connection.cursor() as cursor:
-                view_time_query = "SELECT * FROM reserve WHERE (DATE(r_start) <= %s AND DATE(r_end) >= %s) ORDER BY r_no ASC"
+                view_time_query = """
+                SELECT r.*, c.c_name
+                FROM reserve r
+                LEFT JOIN sign s ON r.r_no = s.s_no
+                LEFT JOIN customer c ON r.c_id = c.c_id
+                WHERE (DATE(r_start) <= %s AND DATE(r_end) >= %s) AND r.r_no = s.s_no
+                ORDER BY r.r_no ASC
+                """
                 cursor.execute(view_time_query, (viewTime, viewTime,))
                 results = cursor.fetchall()
-        
             # 重新編號 r_no
             new_results = []
             new_r_no = 1
@@ -80,11 +97,9 @@ def view(data):
                 result["r_no"] = new_r_no
                 new_results.append(result)
                 new_r_no += 1
-            
             return new_results
     except pymysql.MySQLError as e:
         return "尚未連接資料庫"  # 或者返回其他適當的錯誤訊息
-
 def modify(data):
     try:
         m_id = data["m_id"]
@@ -97,7 +112,6 @@ def modify(data):
                 return results
     except pymysql.MySQLError as e:
         return "資料庫連接錯誤，無法查詢預約資料"
-    
 def delete(data):
     r_no = data["r_no"]
     with pymysql.connect(**connection_params) as connection:
@@ -173,6 +187,7 @@ def now():
                 """
                 cursor.execute(query)  # 執行 SQL 查詢
                 results = cursor.fetchall()
+                print (results)
                 return results
                 
     except pymysql.MySQLError as e:
