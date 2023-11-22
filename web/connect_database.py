@@ -43,7 +43,7 @@ def check(data):
                     (r_start <= %s AND r_end >= %s) OR  
                     (r_start >= %s AND r_start <= %s) OR 
                     (r_end >= %s AND r_end <= %s)         
-                )AND r_del = FALSE
+                )AND r_del = 0
                 """
                 cursor.execute(check_time_and_room_sql, (room, r_start, r_start, r_end, r_end, r_start, r_end,))
                 if cursor.rowcount > 0:
@@ -173,7 +173,6 @@ def now():
                 """
                 cursor.execute(query)  # 執行 SQL 查詢
                 results = cursor.fetchall()
-                print (results)
                 return results
                 
     except pymysql.MySQLError as e:
